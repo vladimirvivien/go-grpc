@@ -1,0 +1,13 @@
+syntax = "proto3";
+package curproto;
+
+message Currency {
+    string code = 1; 
+    string name = 2;
+    int32 number = 3;
+    string country = 4;
+}
+
+message CurrencyList {
+    repeated Currency items = 1;
+}
