@@ -11,3 +11,7 @@ message Currency {
 message CurrencyList {
     repeated Currency items = 1;
 }
+
+message CurrencyRequest {
+    string name = 1;
+}
