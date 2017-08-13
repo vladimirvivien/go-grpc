@@ -26,7 +26,7 @@ func currencies(resp http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	// load currencies from csv
+	// load currencies protobuf from csv
 	list, err := createPbFromCsv("./curdata.csv")
 	if err != nil {
 		fmt.Println(err)

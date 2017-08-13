@@ -1,0 +1,26 @@
+syntax = "proto3";
+package curproto;
+
+service CurrencyService {
+    // GetCurrency searches and returns currency by exact code or name
+    rpc GetCurrency(CurrencyRequest) returns (Currency){}
+}
+
+// Currency represents currency information
+message Currency {
+    string code = 1; 
+    string name = 2;
+    int32 number = 3;
+    string country = 4;
+}
+
+// CurrencyList used for list of currencies
+message CurrencyList {
+    repeated Currency items = 1;
+}
+
+// CurrencyRequest used to request currency
+message CurrencyRequest {
+    string code = 1;
+    int32 number = 2;
+}
