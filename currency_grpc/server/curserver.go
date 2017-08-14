@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"os"
 
@@ -41,6 +42,45 @@ func (c *CurrencyService) GetCurrencyStream(req *curproto.CurrencyRequest, strea
 		}
 	}
 	return nil
+}
+
+// SaveCurrencyStream adds Currency values from a stream to currency items
+func (c *CurrencyService) SaveCurrencyStream(stream curproto.CurrencyService_SaveCurrencyStreamServer) error {
+	curList := new(curproto.CurrencyList)
+	for {
+		cur, err := stream.Recv()
+		if err != nil {
+			// if done, close sream and return result
+			if err == io.EOF {
+				copy(c.curList.Items, curList.Items) // save to list
+				return stream.SendAndClose(curList)
+			}
+			return err
+		}
+		curList.Items = append(curList.Items, cur)
+	}
+}
+
+// FindCurrencyStream sends a stream of CurrencyRequest while streaming Currency values from server.
+func (c *CurrencyService) FindCurrencyStream(stream curproto.CurrencyService_FindCurrencyStreamServer) error {
+	for {
+		req, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				return nil // we're done
+			}
+			return err
+		}
+
+		// search and stream result
+		for _, cur := range c.curList.Items {
+			if cur.Code == req.Code || cur.Number == req.Number {
+				if err := stream.Send(cur); err != nil {
+					return err
+				}
+			}
+		}
+	}
 }
 
 func main() {
