@@ -2,8 +2,11 @@ syntax = "proto3";
 package curproto;
 
 service CurrencyService {
-    // GetCurrency searches and returns currency by exact code or name
-    rpc GetCurrency(CurrencyRequest) returns (Currency){}
+    // GetCurrencyList  returns matching Currency values as list
+    rpc GetCurrencyList(CurrencyRequest) returns (CurrencyList){}
+
+    // GetCurrencyStream returns matching Currencies as a server stream
+    rpc GetCurrencyStream(CurrencyRequest) returns (stream Currency){}
 }
 
 // Currency represents currency information

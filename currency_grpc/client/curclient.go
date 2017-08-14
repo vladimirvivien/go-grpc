@@ -22,11 +22,15 @@ func main() {
 	}
 
 	client := curproto.NewCurrencyServiceClient(conn)
-	curr, err := client.GetCurrency(context.Background(), &curproto.CurrencyRequest{Code: "USD"})
+
+	// GetCurrency
+	curReq := &curproto.CurrencyRequest{Code: "USD"}
+	curList, err := client.GetCurrencyList(context.Background(), curReq)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(curr)
+	for _, cur := range curList.Items {
+		fmt.Printf("%-50s%-10s\n", cur.Country, cur.Code)
+	}
 
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -21,14 +20,27 @@ func newCurrencyService(curList *curproto.CurrencyList) *CurrencyService {
 	return &CurrencyService{curList: curList}
 }
 
-// GetCurrency searches and return Currency by code or name
-func (c *CurrencyService) GetCurrency(ctx context.Context, req *curproto.CurrencyRequest) (*curproto.Currency, error) {
+// GetCurrencyList searches (by Code or Number) and return CurrencyList
+func (c *CurrencyService) GetCurrencyList(ctx context.Context, req *curproto.CurrencyRequest) (*curproto.CurrencyList, error) {
+	var items []*curproto.Currency
 	for _, cur := range c.curList.Items {
-		if cur.Code == req.Code {
-			return cur, nil
+		if cur.Number == req.Number || cur.Code == req.Code {
+			items = append(items, cur)
 		}
 	}
-	return nil, errors.New("currency not found")
+	return &curproto.CurrencyList{Items: items}, nil
+}
+
+// GetCurrencyStream returns matching Currencies as a server stream
+func (c *CurrencyService) GetCurrencyStream(req *curproto.CurrencyRequest, stream curproto.CurrencyService_GetCurrencyStreamServer) error {
+	for _, cur := range c.curList.Items {
+		if cur.Number == req.Number || cur.Code == req.Code {
+			if err := stream.Send(cur); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func main() {
