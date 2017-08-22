@@ -4,42 +4,43 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/vladimirvivien/go-grpc/currency_protobuf/curproto"
+	"github.com/vladimirvivien/go-grpc/proto-encoding/curproto"
 )
 
+var curList *curproto.CurrencyList
+
+func currencies(resp http.ResponseWriter, req *http.Request) {
+
+	pbData, err := proto.Marshal(curList)
+	if err != nil {
+		resp.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+	resp.Header().Set("Content-Type", "application/octet-stream")
+	resp.Write(pbData)
+}
+
 func main() {
-	currencyItems, err := createPbFromCsv("./curdata.csv")
-	if err != nil {
-		fmt.Printf("failed to load csv: %v\n", err)
-		os.Exit(1)
-	}
-	// print on screen
-	for i, item := range currencyItems.Items {
-		fmt.Printf("%-25s%-20s\n", item.Name, item.Code)
-		if i > 50 {
-			fmt.Println("...")
-			break
-		}
-	}
-	// encode as protobuf data
-	data, err := proto.Marshal(currencyItems)
+	// load currencies protobuf from csv
+	list, err := createPbFromCsv("../curdata.csv")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	curList = list
 
-	// save to file
-	if err := ioutil.WriteFile("./curdata.pb", data, 0644); err != nil {
+	// start server
+	http.HandleFunc("/", currencies)
+	fmt.Println("Starting server on port 4040")
+	if err := http.ListenAndServe(":4040", nil); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
-	fmt.Println("data saved protobuf")
-
 }
 
 // createPbFromCsv loads the currency data from csv into protobuf values

@@ -30,8 +30,25 @@ Goal for presentation:
   - demo/discuss unary method sevice calls
   - demo/discuss server and client stream
   - demo/discuss bi-directional
-- gRPC framework middleware
-  - discuss callbacks
+- Discuss/demo advanced features
+  - Handling call timeouts and deadlines (useful with streams)
+  - Raising Error (error propagation)
+  - Structured Error
+  - Security (TLS)
+  - Interceptors
+  - Authorization (account)
+  - Logging
+  - Metadata 
+  - Call retry
+  - Message size limiting (specially for repeated fields)
+  - Connection Limits (limit # of concurrent connections)
+    - concurrent stream limit (server side)
+    - listener limit (server side)
+    - Or, use tapHandler to customize limit
+  - TapHandlers
+  - Rate Limiting using TapHandler
+  - Load balancing
+  - Client connection retries with backoff
 
 # Protobuf 
 https://developers.google.com/protocol-buffers/

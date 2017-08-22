@@ -3,37 +3,36 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/vladimirvivien/go-grpc/currency_protobuf/curproto"
+	"github.com/vladimirvivien/go-grpc/proto-encoding/curproto"
 )
 
-func main() {
-	fname := "./curdata.pb"
+const fileName = "data.pb"
 
+func main() {
 	// load protobuf file
-	data, err := ioutil.ReadFile(fname)
+	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Printf("file %s missing, run encode_pb.go first.\n", fname)
+			log.Fatalf("file %s missing, run encode_pb.go first.\n", fileName)
 		} else {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatalln(err)
 		}
 	}
 
 	// unmarshal into curList
 	curList := new(curproto.CurrencyList)
 	if err := proto.Unmarshal(data, curList); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 
 	// display protobuf data
 	for i, item := range curList.Items {
 		fmt.Printf("%-25s%-20s\n", item.Name, item.Code)
-		if i > 50 {
+		if i > 10 {
 			fmt.Println("...")
 			break
 		}

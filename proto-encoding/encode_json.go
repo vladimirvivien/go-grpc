@@ -6,27 +6,24 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
+
+	"github.com/vladimirvivien/go-grpc/proto-encoding/curproto"
 )
 
-type Currency struct {
-	Code    string `json:"currency_code"`
-	Name    string `json:"currency_name"`
-	Number  int32  `json:"currency_number"`
-	Country string `json:"currency_country"`
-}
+const fileName = "data.js"
 
 func main() {
-	items, err := createJsonFromCsv("./curdata.csv")
+	items, err := createJsonFromCsv("../curdata.csv")
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 	// print on screen
 	for i, item := range items {
 		fmt.Printf("%-25s%-20s\n", item.Name, item.Code)
-		if i > 50 {
+		if i > 10 {
 			fmt.Println("...")
 			break
 		}
@@ -34,21 +31,19 @@ func main() {
 	// encode as protobuf data
 	data, err := json.Marshal(items)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 
 	// save to file
-	if err := ioutil.WriteFile("./curdata.json", data, 0644); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if err := ioutil.WriteFile(fileName, data, 0644); err != nil {
+		log.Fatalln(err)
 	}
-	fmt.Println("data saved protobuf")
+	log.Println("data file saved as", fileName)
 }
 
 // createJsonFromCsv creates []Currency from CSV file
-func createJsonFromCsv(path string) ([]Currency, error) {
-	table := make([]Currency, 0)
+func createJsonFromCsv(path string) ([]curproto.Currency, error) {
+	table := make([]curproto.Currency, 0)
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -69,7 +64,7 @@ func createJsonFromCsv(path string) ([]Currency, error) {
 		if i, err := strconv.Atoi(row[3]); err == nil {
 			num = int32(i)
 		}
-		c := Currency{
+		c := curproto.Currency{
 			Country: row[0],
 			Name:    row[1],
 			Code:    row[2],

@@ -1,6 +1,7 @@
 syntax = "proto3";
 package curproto;
 
+// Currency represents currency information
 message Currency {
     string code = 1; 
     string name = 2;
@@ -8,6 +9,7 @@ message Currency {
     string country = 4;
 }
 
+// CurrencyList a collection of currencies
 message CurrencyList {
     repeated Currency items = 1;
 }
