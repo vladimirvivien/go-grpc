@@ -5,16 +5,21 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
+	"net"
 
-	"github.com/vladimirvivien/go-grpc/currency_grpc/curproto"
+	pb "github.com/vladimirvivien/go-grpc/protobuf"
 
 	"google.golang.org/grpc"
 )
 
+const (
+	server     = "127.0.0.1"
+	serverPort = "50051"
+)
+
 // printUSD demonstrates simple binary call from client
-func printUSD(client curproto.CurrencyServiceClient) {
-	curReq := &curproto.CurrencyRequest{Code: "USD"}
+func printUSD(client pb.CurrencyServiceClient) {
+	curReq := &pb.CurrencyRequest{Code: "USD"}
 	curList, err := client.GetCurrencyList(context.Background(), curReq)
 	if err != nil {
 		log.Fatal(err)
@@ -22,13 +27,13 @@ func printUSD(client curproto.CurrencyServiceClient) {
 	fmt.Println("\nUSD Countries")
 	fmt.Println("-------------")
 	for _, cur := range curList.Items {
-		fmt.Printf("%-50s%-10s\n", cur.Country, cur.Code)
+		fmt.Printf("%-50s%-10s\n", cur.GetCountry(), cur.GetCode())
 	}
 }
 
 // printEUR demonstrates server stream call from client
-func printEUR(client curproto.CurrencyServiceClient) {
-	curReq := &curproto.CurrencyRequest{Code: "EUR"}
+func printEUR(client pb.CurrencyServiceClient) {
+	curReq := &pb.CurrencyRequest{Code: "EUR"}
 	stream, err := client.GetCurrencyStream(context.Background(), curReq)
 	if err != nil {
 		log.Fatal(err)
@@ -45,17 +50,17 @@ func printEUR(client curproto.CurrencyServiceClient) {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Printf("%-50s%-10s\n", cur.Country, cur.Code)
+		fmt.Printf("%-50s%-10s\n", cur.GetCountry(), cur.GetCode())
 	}
 }
 
 // addCurrencies demonstrates client to server stream
-func addCurrencies(client curproto.CurrencyServiceClient) {
-	currencies := []*curproto.Currency{
-		&curproto.Currency{Country: "HAITI", Name: "Gourde", Code: "HTG", Number: 332},
-		&curproto.Currency{Country: "MARTINIQUE", Name: "Euro", Code: "EUR", Number: 978},
-		&curproto.Currency{Country: "CUBA", Name: "Cuban Peso", Code: "CUP", Number: 192},
-		&curproto.Currency{Country: "JAMAICA", Name: "Jamaican Dollar", Code: "JMD", Number: 388},
+func addCurrencies(client pb.CurrencyServiceClient) {
+	currencies := []*pb.Currency{
+		&pb.Currency{Country: "HAITI", Name: "Gourde", Code: "HTG", Number: 332},
+		&pb.Currency{Country: "MARTINIQUE", Name: "Euro", Code: "EUR", Number: 978},
+		&pb.Currency{Country: "CUBA", Name: "Cuban Peso", Code: "CUP", Number: 192},
+		&pb.Currency{Country: "JAMAICA", Name: "Jamaican Dollar", Code: "JMD", Number: 388},
 	}
 
 	// get client stream
@@ -71,7 +76,7 @@ func addCurrencies(client curproto.CurrencyServiceClient) {
 		}
 	}
 
-	// close stream and get saved currencies as CurrencyList as reply
+	// close stream and get saved currencies as pb.CurrencyList as reply
 	curList, err := stream.CloseAndRecv()
 	if err != nil {
 		log.Fatal(err)
@@ -80,19 +85,19 @@ func addCurrencies(client curproto.CurrencyServiceClient) {
 	fmt.Println("\nSaved currencies")
 	fmt.Println("-----------------")
 	for _, cur := range curList.Items {
-		fmt.Printf("%-50s%-10s\n", cur.Country, cur.Code)
+		fmt.Printf("%-50s%-10s\n", cur.GetCountry(), cur.GetCode())
 	}
 }
 
 // findCurrencies demonstrates bi-directional stream: one direction streams
 // requests to the server while receiving replies from the server.
-func findCurrencies(client curproto.CurrencyServiceClient) {
-	reqs := []*curproto.CurrencyRequest{
-		&curproto.CurrencyRequest{Code: "CDF"},
-		&curproto.CurrencyRequest{Code: "AZN"},
-		&curproto.CurrencyRequest{Number: 392},
-		&curproto.CurrencyRequest{Code: "QAR"},
-		&curproto.CurrencyRequest{Number: 949},
+func findCurrencies(client pb.CurrencyServiceClient) {
+	reqs := []*pb.CurrencyRequest{
+		&pb.CurrencyRequest{Code: "CDF"},
+		&pb.CurrencyRequest{Code: "AZN"},
+		&pb.CurrencyRequest{Number: 392},
+		&pb.CurrencyRequest{Code: "QAR"},
+		&pb.CurrencyRequest{Number: 949},
 	}
 
 	stream, err := client.FindCurrencyStream(context.Background())
@@ -124,21 +129,20 @@ func findCurrencies(client curproto.CurrencyServiceClient) {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Printf("%-50s%-10s\n", cur.Country, cur.Code)
+		fmt.Printf("%-50s%-10s\n", cur.GetCountry(), cur.GetCode())
 	}
 }
 
 func main() {
-	server := "127.0.0.1:50051"
+	serverAddr := net.JoinHostPort(server, serverPort)
 
 	// setup insecure connection
-	conn, err := grpc.Dial(server, grpc.WithInsecure())
+	conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
-	client := curproto.NewCurrencyServiceClient(conn)
+	client := pb.NewCurrencyServiceClient(conn)
 
 	printUSD(client)
 
@@ -147,5 +151,4 @@ func main() {
 	addCurrencies(client)
 
 	findCurrencies(client)
-
 }

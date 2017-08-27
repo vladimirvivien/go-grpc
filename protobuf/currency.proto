@@ -1,0 +1,41 @@
+syntax = "proto3";
+package protobuf;
+
+service CurrencyService {
+    // GetCurrencyList  returns matching Currency values as list
+    // Example of a unary call
+    rpc GetCurrencyList(CurrencyRequest) returns (CurrencyList){}
+
+    // GetCurrencyStream returns matching Currencies as a server stream
+    // Example of using server to client stream.
+    rpc GetCurrencyStream(CurrencyRequest) returns (stream Currency){}
+
+    // SaveCurrencyStream sends multiple currencies to server to be saved
+    // returns a list of saved currency.
+    // Example of using client stream to server.
+    rpc SaveCurrencyStream(stream Currency) returns (CurrencyList){}
+
+    // FindCurrencyStream sends a stream of CurrencyRequest to server and returns
+    // a stream of Currency values.
+    // Example of bi-directional stream
+    rpc FindCurrencyStream(stream CurrencyRequest) returns (stream Currency){}
+}
+
+// Currency represents currency information
+message Currency {
+    string code = 1; 
+    string name = 2;
+    int32 number = 3;
+    string country = 4;
+}
+
+// CurrencyList used for list of currencies
+message CurrencyList {
+    repeated Currency items = 1;
+}
+
+// CurrencyRequest used to request currency
+message CurrencyRequest {
+    string code = 1;
+    int32 number = 2;
+}

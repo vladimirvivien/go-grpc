@@ -1,6 +1,9 @@
-syntax = "proto3";
-package curproto;
+# gRPC Example
+This is a very simple gRPC client and server example.  The server exposes several operations
+which demonstrates all 4 call types of gRPC unary, client stream, server stream, and 
+bi-directional streams as shown in the IDL below:
 
+```
 service CurrencyService {
     // GetCurrencyList  returns matching Currency values as list
     // Example of a unary call
@@ -20,22 +23,4 @@ service CurrencyService {
     // Example of bi-directional stream
     rpc FindCurrencyStream(stream CurrencyRequest) returns (stream Currency){}
 }
-
-// Currency represents currency information
-message Currency {
-    string code = 1; 
-    string name = 2;
-    int32 number = 3;
-    string country = 4;
-}
-
-// CurrencyList used for list of currencies
-message CurrencyList {
-    repeated Currency items = 1;
-}
-
-// CurrencyRequest used to request currency
-message CurrencyRequest {
-    string code = 1;
-    int32 number = 2;
-}
+```

@@ -1,4 +1,4 @@
-package servutil
+package util
 
 import (
 	"encoding/csv"
@@ -6,12 +6,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vladimirvivien/go-grpc/currency_grpc/curproto"
+	pb "github.com/vladimirvivien/go-grpc/protobuf"
 )
 
 // LoadPbFromCsv loads the currency data from csv into protobuf values
-func LoadPbFromCsv(path string) (*curproto.CurrencyList, error) {
-	items := make([]*curproto.Currency, 0)
+func LoadPbFromCsv(path string) ([]*pb.Currency, error) {
+	items := make([]*pb.Currency, 0)
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func LoadPbFromCsv(path string) (*curproto.CurrencyList, error) {
 			num = int32(i)
 		}
 		// create data row with protobuf
-		c := &curproto.Currency{
+		c := &pb.Currency{
 			Country: row[0],
 			Name:    row[1],
 			Code:    row[2],
@@ -42,5 +42,5 @@ func LoadPbFromCsv(path string) (*curproto.CurrencyList, error) {
 		}
 		items = append(items, c)
 	}
-	return &curproto.CurrencyList{Items: items}, err
+	return items, err
 }

@@ -30,7 +30,8 @@ Goal for presentation:
   - demo/discuss unary method sevice calls
   - demo/discuss server and client stream
   - demo/discuss bi-directional
-- Discuss/demo advanced features
+- Discuss/demo good practices and freatures
+  - Use getter to avoid nil exception (specially in server)
   - Handling call timeouts and deadlines (useful with streams)
   - Raising Error (error propagation)
   - Structured Error
