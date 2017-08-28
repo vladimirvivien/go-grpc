@@ -34,16 +34,16 @@ func (c *CurrencyService) GetCurrencyList(
 	req *pb.CurrencyRequest,
 ) (*pb.CurrencyList, error) {
 
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument,
-			"missing currency request",
-		)
-	}
-	if req.Number == 0 && req.Code == "" {
+	if req.GetNumber() == 0 && req.GetCode() == "" {
+		// dont return raw errors like the following:
+		// return nil, fmt.Errorf("must provide currency number or code")
+
+		// instread return status with informative code:
 		return nil, status.Errorf(
 			codes.InvalidArgument,
 			"must provide currency number or code",
 		)
+
 	}
 
 	var items []*pb.Currency
@@ -62,12 +62,7 @@ func (c *CurrencyService) GetCurrencyStream(
 	stream pb.CurrencyService_GetCurrencyStreamServer,
 ) error {
 
-	if req == nil {
-		return status.Errorf(codes.InvalidArgument,
-			"missing currency request",
-		)
-	}
-	if req.Number == 0 && req.Code == "" {
+	if req.GetNumber() == 0 && req.GetCode() == "" {
 		return status.Errorf(
 			codes.InvalidArgument,
 			"must provide currency number or code",
@@ -94,10 +89,16 @@ func (c *CurrencyService) SaveCurrencyStream(
 	for {
 		cur, err := stream.Recv()
 
-		if cur == nil {
-			return status.Errorf(codes.InvalidArgument,
-				"missing currency",
-			)
+		// ensure we're not done first.
+		if err != nil {
+			// if done, close sream and return result
+			if err == io.EOF {
+				c.mtex.Lock()
+				copy(c.data, curList.Items) // save to list
+				c.mtex.Unlock()
+				return stream.SendAndClose(curList)
+			}
+			return err
 		}
 
 		// validation with structured error
@@ -118,16 +119,6 @@ func (c *CurrencyService) SaveCurrencyStream(
 			return statDetail.Err()
 		}
 
-		if err != nil {
-			// if done, close sream and return result
-			if err == io.EOF {
-				c.mtex.Lock()
-				copy(c.data, curList.Items) // save to list
-				c.mtex.Unlock()
-				return stream.SendAndClose(curList)
-			}
-			return err
-		}
 		curList.Items = append(curList.Items, cur)
 	}
 
@@ -141,11 +132,20 @@ func (c *CurrencyService) FindCurrencyStream(
 
 	for {
 		req, err := stream.Recv()
+
 		if err != nil {
 			if err == io.EOF {
 				return nil // we're done
 			}
 			return err
+		}
+
+		// validate req
+		if req.GetNumber() == 0 && req.GetCode() == "" {
+			return status.Errorf(
+				codes.InvalidArgument,
+				"invalid request, must provide number or code",
+			)
 		}
 
 		// search and stream result
