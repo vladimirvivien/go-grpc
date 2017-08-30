@@ -31,16 +31,18 @@ Goal for presentation:
   - demo/discuss server and client stream
   - demo/discuss bi-directional
 - Discuss/demo good practices and freatures
-  - Use getter to avoid nil exception (specially in server)
-  - Handling call timeouts and deadlines (useful with streams)
-  - Raising Error (error propagation)
-  - Structured Error
-  - Security (TLS)
-  - Interceptors
-  - Authorization (account)
-  - Logging
-  - Metadata 
-  - Call retry
+  [x] Use getter to avoid nil exception (specially in server)
+  [x] Raising and propagating erros prooperly 
+  [x] Send complex data with errors
+  [x] Secure service with TLS
+  [x] Service call timeouts
+  [ ] Interceptors for req/resp logging
+
+Proactive protection
+  [ ] Serviice authorization with tokens
+  - Validation of deadlines (useful with streams)
+  - Context Metadata 
+  - Call retryI
   - Message size limiting (specially for repeated fields)
   - Connection Limits (limit # of concurrent connections)
     - concurrent stream limit (server side)
