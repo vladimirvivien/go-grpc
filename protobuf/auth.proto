@@ -1,0 +1,15 @@
+syntax = "proto3";
+package protobuf;
+
+message AuthRequest{
+    string uname = 1;
+    string pwd = 2;
+}
+
+message AuthResponse {
+    string token = 1;
+}
+
+service Auth {
+    rpc Login(AuthRequest) returns (AuthResponse){}
+}

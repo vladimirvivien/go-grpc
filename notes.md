@@ -36,13 +36,14 @@ Goal for presentation:
   [x] Send complex data with errors
   [x] Secure service with TLS
   [x] Service call timeouts
-  [ ] Interceptors for req/resp logging
+  [ ] Inteceptors - logging 
+  [ ] Inteceptors - 
 
 Proactive protection
   [ ] Serviice authorization with tokens
-  - Validation of deadlines (useful with streams)
+  - Validation deadlines (useful with streams)
   - Context Metadata 
-  - Call retryI
+  - Call retry
   - Message size limiting (specially for repeated fields)
   - Connection Limits (limit # of concurrent connections)
     - concurrent stream limit (server side)
