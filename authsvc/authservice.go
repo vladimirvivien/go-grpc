@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -64,12 +65,15 @@ func (s *AuthService) loadUser() error {
 func (s *AuthService) Login(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
 	log.Println("Authorizing user", req.GetUname())
 	if req.GetUname() == "" || req.GetPwd() == "" {
+		log.Println("Auth failed for user", req.GetUname())
 		return nil, status.Errorf(codes.InvalidArgument, "missing uname or password")
 	}
 	if req.GetUname() != uname {
+		log.Println("missing uname")
 		return nil, status.Error(codes.PermissionDenied, "invalid user")
 	}
 	if err := bcrypt.CompareHashAndPassword(s.user.pwd, []byte(req.GetPwd())); err != nil {
+		log.Println("auth failed")
 		return nil, status.Error(codes.PermissionDenied, "auth failed")
 	}
 
@@ -79,7 +83,7 @@ func (s *AuthService) Login(ctx context.Context, req *pb.AuthRequest) (*pb.AuthR
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"exp":  15000,
+			"exp":  time.Now().Add(time.Minute * 20).Unix(),
 			"sub":  uname,
 			"iss":  "authservice",
 			"aud":  "user",
@@ -96,7 +100,7 @@ func (s *AuthService) Login(ctx context.Context, req *pb.AuthRequest) (*pb.AuthR
 		return nil, status.Error(codes.Internal, "internal login problem")
 	}
 
-	log.Printf("User %s logged in OK with toke %s\n", uname, tokenString)
+	log.Printf("User %s logged in OK, JWT token: %s\n", uname, tokenString)
 	return &pb.AuthResponse{Token: tokenString}, nil
 }
 
