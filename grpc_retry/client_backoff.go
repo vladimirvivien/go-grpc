@@ -25,7 +25,6 @@ const (
 	authServer = server
 	authPort   = "50052"
 	certFile   = "./../certs/ca.pem"
-	retryMax   = 5
 )
 
 var (
@@ -209,60 +208,6 @@ func findCurrencies(client pb.CurrencyServiceClient) {
 	}
 }
 
-// This is a simple retry strategy using intercept.
-// It uses a simplistic retry/backoff as an example.
-// It attempts to filter out errors that should not
-// be retried.  Others are blindly retried.
-func unaryRetryIntercept(
-	ctx context.Context,
-	method string,
-	req, reply interface{},
-	conn *grpc.ClientConn,
-	invoker grpc.UnaryInvoker,
-	opts ...grpc.CallOption,
-) (err error) {
-	delay := time.Millisecond * 300
-	bkoff := time.Millisecond * 200
-	deadline := delay + bkoff
-	for try := 0; try < retryMax; try++ {
-		err = invoker(ctx, method, req, reply, conn, opts...)
-		if err == nil {
-			return
-		}
-
-		stat, _ := status.FromError(err)
-		log.Printf("Try:%d, stat code: %d", try, stat.Code())
-		switch stat.Code() {
-		// do not retry on the followings,
-		// these should use failfast
-		case codes.Canceled,
-			codes.DeadlineExceeded,
-			codes.InvalidArgument,
-			codes.Internal,
-			codes.PermissionDenied,
-			codes.Unauthenticated,
-			codes.Unimplemented,
-			codes.Unknown:
-			return
-		// any other errors, sleep then
-		// retry with increasing backoff
-		default:
-			// delay a bit and check cancellation
-			log.Println("Delay for ", deadline)
-			select {
-			case <-time.After(deadline):
-				bkoff = bkoff + time.Millisecond*150
-				deadline = deadline + bkoff
-				continue
-			case <-ctx.Done(): // check for cancellation
-				log.Println("Cancel detected")
-				return
-			}
-		}
-	}
-	return
-}
-
 func main() {
 	authAddr := net.JoinHostPort(authServer, authPort)
 	serverAddr := net.JoinHostPort(server, serverPort)
@@ -276,27 +221,28 @@ func main() {
 	authConn, err := grpc.Dial(
 		authAddr,
 		grpc.WithTransportCredentials(tlsCreds),
-		grpc.WithUnaryInterceptor(unaryRetryIntercept),
+		grpc.WithBackoffConfig(
+			grpc.BackoffConfig{MaxDelay: time.Second * 7},
+		),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Dialing faied:", err)
 	}
 	authClient := pb.NewAuthClient(authConn)
 
 	// get token from auth service
 	token, err = login(authClient)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("login failed:", err)
 	}
 	// create a jwt credential with token
 	jwtCreds := util.NewJwtCreds(token)
 
-	// setup insecure connection
+	// setup connection to server
 	conn, err := grpc.Dial(
 		serverAddr,
 		grpc.WithTransportCredentials(tlsCreds),
 		grpc.WithPerRPCCredentials(jwtCreds),
-		grpc.WithUnaryInterceptor(unaryRetryIntercept),
 		grpc.WithBackoffConfig(
 			grpc.BackoffConfig{MaxDelay: time.Second * 7},
 		),
