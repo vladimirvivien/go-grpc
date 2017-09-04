@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// JWT implements the gRPC credentials.PerRPCCredentials interface.
+// jwtCreds implements the gRPC credentials.PerRPCCredentials interface.
 // It can be used to inject JWT token into gRPC metadata headers.
 type jwtCreds struct {
 	token string

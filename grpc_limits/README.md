@@ -11,12 +11,6 @@ going bad, including:
  * Limit size of message client can receive
  * Limit size of message client can send
 
- Another protective measure is to setup limits on the rate at
- which a service can be called for a given period of times.
- This is done using an InTapHandle on the server to implement
- a rate limiter. 
-
-
 #### Run Example
 ```sh
 // start auth server
@@ -31,3 +25,4 @@ $> go run serv_limits.go
 $> go run client_limits.go
 
 ```
+
