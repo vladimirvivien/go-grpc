@@ -20,11 +20,14 @@ import (
 )
 
 const (
-	server     = "127.0.0.1"
-	serverPort = "50051"
-	authServer = server
-	authPort   = "50052"
-	certFile   = "./../certs/ca.pem"
+	server         = "127.0.0.1"
+	serverPort     = "50051"
+	authServer     = server
+	authPort       = "50052"
+	certFile       = "./../certs/ca.pem"
+	maxRcvdMsgSize = 1024 * 1024 // 1 MB limit
+	maxSendMsgSize = 500 * 1024  // 500K send limit
+
 )
 
 var (
@@ -221,7 +224,6 @@ func main() {
 	authConn, err := grpc.Dial(
 		authAddr,
 		grpc.WithTransportCredentials(tlsCreds),
-		grpc.WithDefaultCallOptions(grpc.FailFast(false)),
 		grpc.WithBackoffConfig(
 			grpc.BackoffConfig{MaxDelay: time.Second * 7},
 		),
@@ -244,6 +246,12 @@ func main() {
 		serverAddr,
 		grpc.WithTransportCredentials(tlsCreds),
 		grpc.WithPerRPCCredentials(jwtCreds),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(maxRcvdMsgSize),
+		),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallSendMsgSize(maxSendMsgSize),
+		),
 		grpc.WithDefaultCallOptions(grpc.FailFast(false)),
 		grpc.WithBackoffConfig(
 			grpc.BackoffConfig{MaxDelay: time.Second * 7},
@@ -253,14 +261,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("got service conn OK")
+
 	client := pb.NewCurrencyServiceClient(conn)
 
 	printUSD(client)
 
-	//printEUR(client)
+	printEUR(client)
 
-	//addCurrencies(client)
+	addCurrencies(client)
 
-	//findCurrencies(client)
+	findCurrencies(client)
 }
