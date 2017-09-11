@@ -3,7 +3,7 @@ This is a very simple gRPC client and server example.  The server exposes severa
 which demonstrates all 4 call types of gRPC unary, client stream, server stream, and 
 bi-directional streams as shown in the IDL below:
 
-```
+```protobuf
 service CurrencyService {
     // GetCurrencyList  returns matching Currency values as list
     // Example of a unary call
