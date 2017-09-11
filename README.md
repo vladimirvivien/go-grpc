@@ -345,3 +345,14 @@ func main() {
 Go client file [grpc/client.go](https://github.com/vladimirvivien/go-grpc/blob/master/grpc/client.go)
 
 In function `main()` the code uses package `grpc` to setup connection to the RPC server.  The client stub is generated during protoc compilation and provides an extensive API to communicate with the server.  Note in function `printUSD` the call to `client.GetCurrencyList()` looks like it is a local call.  However, its an abstraction that hides the complicated dance of serialization and deserialization of protocol buffers to communicat with the server.
+
+## Other gRPC Examples
+This repository contains an extensive list of gRPC examples and Go.  You may find some of the followings useful:
+- [grpc_auth](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_auth): example of implementation of JWT token-based authorization.
+- [grpc_err](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_err): shows how to do error handling in gRPC including the use of complex error objects.
+- [grpc_intrcpt](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_intrcpt): introduction to intercept for logging.
+- [grpc_limits](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_limits): shows how add preventive measures to guard your gRPC service and clients from failures by specifying limits. 
+- [grpc_rate](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_rate): shows how to setup limits on the rate at which a service can be called for a given period of times.
+- [grpc_retry](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_retry): shows how to use intecerptors to implement a simple retry logic.
+- [grpc_tls](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_tls):shows how to setup TLS-based auth on both client and the server.
+- [grpc_to](https://github.com/vladimirvivien/go-grpc/tree/master/grpc_to): shows how to use context timeout to indicate to the framework how long a request should take.
