@@ -37,7 +37,7 @@ gRPC is designed to work efficiently with usage ranging from datacenter computin
 - Support for bi-directional streaming between client and servers
 - Extensive middleware API to control structural concerns such as security, logging, and service policy
 
-## Exploring Potocol Buffers
+## Exploring Protocol Buffers
 gRPC's efficiency is partly due to its use of protocol buffers (or protobuf).  It is a language-neutral and platform-neutral technology to efficiently serialize data.  Protocol buffers can be used independently of gRPC as a binary wire or storage format.
 
 The first step to using protocol buffers is to define `messages` which are structures that consist of strongly-typed fields representing the data to be encoded.  Protocol buffer supports fields of diverse tyes including numeric, string, boolean, enums, or other messages. 
